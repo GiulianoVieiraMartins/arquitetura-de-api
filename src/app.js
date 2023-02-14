@@ -23,6 +23,17 @@ app.get('/products/:id', async (req, res) => {
   return res.status(200).json(product);
 });
 
+app.post('/products', async (req, res) => {
+  const { name } = req.body;
+  if (!name) {
+    return res.status(400).json({ message: '"name" is required' });
+  } if (name.length < 5) {
+    return res.status(422).json({ message: '"name" length must be at least 5 characters long' });
+  }
+  const newProduct = await productsModel.insertion(name);
+  return res.status(201).json({ id: newProduct, name });
+});
+
 // não remova essa exportação, é para o avaliador funcionar.
 // você pode registrar suas rotas normalmente, como o exemplo acima.
 // você deve usar o arquivo index.js para executar sua aplicação.
