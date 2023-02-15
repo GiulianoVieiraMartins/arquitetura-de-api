@@ -1,5 +1,6 @@
 const express = require('express');
 const productsModel = require('./models/products.model');
+const { idSales, saleInsert } = require('./models/salesModel');
 
 const app = express();
 app.use(express.json());
@@ -34,6 +35,15 @@ app.post('/products', async (req, res) => {
   return res.status(201).json({ id: newProduct, name });
 });
 
+app.post('/sales', async (req, res) => {
+  const newSale = req.body;
+  const sale = await idSales(newSale)
+  if (sale.length !== newSale.length) {
+    return res.status().json({ type: 404, message: 'Product not found' });
+  }
+  const saleDone = await saleInsert(newSale);
+  return res.status(201).json(saleDone)
+});
 // não remova essa exportação, é para o avaliador funcionar.
 // você pode registrar suas rotas normalmente, como o exemplo acima.
 // você deve usar o arquivo index.js para executar sua aplicação.
