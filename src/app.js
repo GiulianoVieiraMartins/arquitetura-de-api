@@ -1,6 +1,7 @@
 const express = require('express');
 const productsModel = require('./models/products.model');
-const { idSales, saleInsert } = require('./models/salesModel');
+const salesService = require('./salesServices');
+const validateSaleId = require('./middlewares/VerifySales');
 
 const app = express();
 app.use(express.json());
@@ -35,14 +36,13 @@ app.post('/products', async (req, res) => {
   return res.status(201).json({ id: newProduct, name });
 });
 
-app.post('/sales', async (req, res) => {
+app.post('/sales', validateSaleId, async (req, res) => {
   const newSale = req.body;
-  const sale = await idSales(newSale)
-  if (sale.length !== newSale.length) {
-    return res.status().json({ type: 404, message: 'Product not found' });
+  const sales = await salesService.insertSale(newSale);
+  if (sales.type === 404) {
+    return res.status(sales.type).json({ message: sales.message });
   }
-  const saleDone = await saleInsert(newSale);
-  return res.status(201).json(saleDone)
+  return res.status(201).json(sales);
 });
 // não remova essa exportação, é para o avaliador funcionar.
 // você pode registrar suas rotas normalmente, como o exemplo acima.

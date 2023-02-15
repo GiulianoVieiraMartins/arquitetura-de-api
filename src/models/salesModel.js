@@ -1,31 +1,29 @@
 const { connection } = require('./connection');
 
-const idSales = async (id) => {
-  const listId = id.map((item) => item.productId).map((_) => '?').join(', ');
-  const [result] = await connection
-    .execute(`SELECT * FROM StoreManager.products WHERE id IN (${listId})`,
-      id.map((item) => item.productId));
-  return result;
-};
-
-const saleInsert = async (newSale) => {
+const insertSale = async (newSale) => {
   const [{ insertId }] = await connection
     .execute('INSERT INTO StoreManager.sales (date) VALUES (NOW())');
-
-  const a = await Promise.all(newSale.map(async (el) => {
+  const sale = await Promise.all(newSale.map(async (element) => {
     await connection.execute(`INSERT INTO StoreManager.sales_products
     (sale_id, product_id, quantity) VALUES (?, ?, ?)`,
-      [insertId, el.productId, el.quantity]);
-    return el;
+      [insertId, element.productId, element.quantity]);
+    return element;
   }));
   const saleDone = {
     id: insertId,
-    itemsSold: a,
+    itemsSold: sale,
   };
   return saleDone;
 };
 
+const idSales = async (id) => {
+  const a = id.map((item) => item.productId).map((_) => '?').join(', ');
+  const query = `SELECT * FROM StoreManager.products WHERE id IN (${a})`;
+  const result = await connection.execute(query, id.map((item) => item.productId));
+  return result[0];
+};
+
 module.exports = {
-  saleInsert,
+  insertSale,
   idSales,
 };
